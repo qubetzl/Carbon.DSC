@@ -38,8 +38,9 @@ function Get-TargetResource
     if( $group )
     {
         $description = $group.Description
-        $members = $group.Members
+        $members = @($group.Members | Resolve-PrincipalName)
         $ensure = 'Present'
+        $group.Dispose()
     }
 
     @{
@@ -167,7 +168,7 @@ function Set-TargetResource
     {
          $memberNames = $Members | Resolve-MemberName
     }
-    $currentMemberNames = @((Get-TargetResource -Name $Name).Members | Resolve-PrincipalName)
+    $currentMemberNames = (Get-TargetResource -Name $Name).Members
 
     $parameters = @{
         EnsureMembers = $EnsureMembers
@@ -271,12 +272,11 @@ function Test-TargetResource
     {
          $memberNames = $Members | Resolve-MemberName
     }
-    $currentMemberNames = @($resource.Members | Resolve-PrincipalName)
 
     $parameters = @{
         EnsureMembers = $EnsureMembers
         MemberNames = $memberNames
-        CurrentMemberNames = $currentMemberNames
+        CurrentMemberNames = $resource.Members
     }
     $membershipChanges = Resolve-MembershipChanges @parameters
 
